@@ -20,7 +20,7 @@ LiPoly.Measured_Current_R       = - LiPoly.Measured_Current;
 % Converting seconds to hours
 LiPoly.RecordingTime_Hours      = LiPoly.RecordingTime/3600;
 
-[SOC_Estimated, Vt_Estimated, Vt_Error] = EKF_SOC_Estimation(LiPoly.Measured_Current_R, LiPoly.Measured_Voltage, LiPoly.Measured_Temperature);
+[SOC_Estimated, Vt_Estimated, Vt_Error] = ekf_model(LiPoly.Measured_Current_R, LiPoly.Measured_Voltage, LiPoly.Measured_Temperature);
 
 % Terminal Voltage Measured vs. Estimated
 figure
@@ -41,15 +41,15 @@ ylabel('Terminal Voltage Error');
 xlabel('Time[hr]');
 
 % SOC Coulomb Counting vs. Estimated
-figure
-plot (LiPoly.RecordingTime_Hours,LiPoly.Measured_SOC);
-hold on
-plot (LiPoly.RecordingTime_Hours,SOC_Estimated*100);
-hold off;
-legend('Coulomb Counting','Estimated EKF');
-ylabel('SOC[%]');xlabel('Time[hr]');
-title('Coulomb Counting vs. SOC Estimated at 0 Deg C')
-grid minor
+% figure
+% plot (LiPoly.RecordingTime_Hours,LiPoly.Measured_SOC);
+% hold on
+% plot (LiPoly.RecordingTime_Hours,SOC_Estimated*100);
+% hold off;
+% legend('Coulomb Counting','Estimated EKF');
+% ylabel('SOC[%]');xlabel('Time[hr]');
+% title('Coulomb Counting vs. SOC Estimated at 0 Deg C')
+% grid minor
 
 % SOC Error
 figure
@@ -58,4 +58,3 @@ legend('SOC Error');
 ylabel('SOC Error [%]');
 xlabel('Time[hr]');
 grid 
-

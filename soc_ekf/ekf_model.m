@@ -1,4 +1,4 @@
-function [SOC_Estimated, Vt_Estimated, Vt_Error] = EKF_SOC_Estimation(Current, Vt_Actual, Temperature)
+function [SOC_Estimated, Vt_Estimated, Vt_Error] = ekf_model(Current, Vt_Actual, Temperature)
 
 load 'BatteryModel.mat'; % Load the battery parameters 
 load 'SOC-OCV.mat'; % Load the SOC-OCV curve
@@ -17,6 +17,9 @@ F_C1    = scatteredInterpolant(param.T,param.SOC,param.C1);
 F_C2    = scatteredInterpolant(param.T,param.SOC,param.C2);
 % F_OCV   = scatteredInterpolant(param.T,param.SOC,param.OCV);  
 % OCV can be extrapolated using the same method or through the polyfit function
+
+SOCOCV  = polyfit(SOC_OCV.SOC,SOC_OCV.OCV,11); % calculate 11th order polynomial for the SOC-OCV curve 
+dSOCOCV = polyder(SOCOCV); % derivative of SOC-OCV curve for matrix C
 
 n_x   = size(X,1);
 R_x   = 2.5e-5;
