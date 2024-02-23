@@ -33,6 +33,17 @@ ylabel('Terminal Voltage[V]');xlabel('Time[hr]');
 title('Measured vs. Estimated Terminal Voltage (V) at 0 Deg C')
 grid minor
 
+% SOC Estimated
+figure
+plot(LiPoly.RecordingTime_Hours,LiPoly.Measured_SOC);
+hold on
+plot(LiPoly.RecordingTime_Hours, SOC_Estimated*100);
+hold off;
+legend('Measured','Estimated EKF');
+ylabel('SOC[%]');xlabel('Time[hr]');
+title('Measured vs. Estimated SOC (%) at 0 Deg C')
+grid minor
+
 % Terminal Voltage Error
 figure
 plot(LiPoly.RecordingTime_Hours,Vt_Error);

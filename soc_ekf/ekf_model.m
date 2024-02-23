@@ -1,25 +1,22 @@
 function [SOC_Estimated, Vt_Estimated, Vt_Error] = ekf_model(Current, Vt_Actual, Temperature)
 
-load 'BatteryModel.mat'; % Load the battery parameters 
-load 'SOC-OCV.mat'; % Load the SOC-OCV curve
+load 'BatteryModel.mat';
+load 'SOC-OCV.mat';
 
-SOC_Init    = 1; % intial SOC
-X           = [SOC_Init; 0; 0]; % state space x parameter intializations
-DeltaT      = 1; % sample time in seconds
-Qn_rated    = 4.81 * 3600; % Ah to Amp-seconds
+SOC_Init    = 1;
+X           = [SOC_Init; 0; 0];
+DeltaT      = 1; 
+Qn_rated    = 4.81 * 3600; 
 
-% initialize scatteredInterpolant functions for battery parameters and SOC-OCV curve
-% this function also allows for extrapolation
+% interpolation
 F_R0    = scatteredInterpolant(param.T,param.SOC,param.R0);
 F_R1    = scatteredInterpolant(param.T,param.SOC,param.R1);
 F_R2    = scatteredInterpolant(param.T,param.SOC,param.R2);
 F_C1    = scatteredInterpolant(param.T,param.SOC,param.C1);
 F_C2    = scatteredInterpolant(param.T,param.SOC,param.C2);
-% F_OCV   = scatteredInterpolant(param.T,param.SOC,param.OCV);  
-% OCV can be extrapolated using the same method or through the polyfit function
 
-SOCOCV  = polyfit(SOC_OCV.SOC,SOC_OCV.OCV,11); % calculate 11th order polynomial for the SOC-OCV curve 
-dSOCOCV = polyder(SOCOCV); % derivative of SOC-OCV curve for matrix C
+SOCOCV  = polyfit(SOC_OCV.SOC,SOC_OCV.OCV,11); 
+dSOCOCV = polyder(SOCOCV); 
 
 n_x   = size(X,1);
 R_x   = 2.5e-5;
@@ -34,7 +31,6 @@ SOC_Estimated   = [];
 Vt_Estimated    = [];
 Vt_Error        = [];
 ik = length(Current);
-% Current         = Current-0.1;
 
 for k=1:1:ik
     T           = Temperature(k); % C
@@ -43,17 +39,13 @@ for k=1:1:ik
     V1          = X(2);
     V2          = X(3);
     
-    % Evaluate the battery parameter scatteredInterpolant 
-    % functions for the current temperature & SOC
     R0     = F_R0(T,SOC);
     R1     = F_R1(T,SOC);
     R2     = F_R2(T,SOC);
     C1     = F_C1(T,SOC);
     C2     = F_C2(T,SOC);
-    % OCV    = F_OCV(T,SOC);
-    % OCV    = pchip(param.SOC,param.OCV,SOC); % pchip sample for unknown or single temperature
+    OCV = polyval(SOCOCV,SOC);
     
-    OCV = polyval(SOCOCV,SOC); % calculate the values of OCV at the given SOC, using the polynomial SOCOCV
     Tau_1       = C1 * R1;
     Tau_2       = C2 * R2;
     
@@ -64,9 +56,9 @@ for k=1:1:ik
     b2 = R2 * (1 - exp(-DeltaT/Tau_2)); 
     TerminalVoltage = OCV - R0*U - V1 - V2;
     if U > 0
-        eta = 1; % eta for discharging
+        eta = 1; %discharging
     elseif U <= 0 
-        eta = 1; % eta for charging
+        eta = 1; % charging
     end
     dOCV = polyval(dSOCOCV, SOC);
     C_x    = [dOCV -1 -1];
